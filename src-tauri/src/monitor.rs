@@ -71,7 +71,7 @@ fn collect_connections(sys: &System) -> Vec<ConnectionEntry> {
 
 fn proc_name(sys: &System, pid: u32) -> String {
     sys.process(Pid::from(pid as usize))
-        .map(|p| p.name().to_string())
+        .map(|p| p.name().to_string_lossy().into_owned())
         .unwrap_or_else(|| format!("PID {}", pid))
 }
 

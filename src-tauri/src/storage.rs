@@ -68,9 +68,9 @@ impl Storage {
                      FROM network_samples WHERE interface_name=?1 AND timestamp>=?2
                      ORDER BY timestamp ASC",
                 )?;
-                st.query_map(params![iface, since_s], map_row)?
+                Ok(st.query_map(params![iface, since_s], map_row)?
                     .filter_map(|r| r.ok())
-                    .collect()
+                    .collect())
             }
             None => {
                 let mut st = self.conn.prepare(
@@ -78,9 +78,9 @@ impl Storage {
                      FROM network_samples WHERE timestamp>=?1
                      ORDER BY timestamp ASC",
                 )?;
-                st.query_map(params![since_s], map_row)?
+                Ok(st.query_map(params![since_s], map_row)?
                     .filter_map(|r| r.ok())
-                    .collect()
+                    .collect())
             }
         }
     }

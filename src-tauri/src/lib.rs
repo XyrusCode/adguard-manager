@@ -5,7 +5,7 @@ mod types;
 
 use chrono::Utc;
 use std::sync::{Arc, Mutex};
-use tauri::State;
+use tauri::{Manager, State};
 use types::{InterfaceSample, NetworkAdapter};
 
 pub struct AppState {

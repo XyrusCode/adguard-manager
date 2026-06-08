@@ -1,6 +1,5 @@
 use crate::types::NetworkAdapter;
 use sysinfo::Networks;
-use tracing::error;
 
 pub const PRIMARY: &str = "94.140.14.14";
 pub const SECONDARY: &str = "94.140.15.15";
