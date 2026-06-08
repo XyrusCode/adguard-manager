@@ -61,27 +61,29 @@ impl Storage {
         since: DateTime<Utc>,
     ) -> Result<Vec<InterfaceSample>> {
         let since_s = since.to_rfc3339();
-        match interface {
-            Some(iface) => {
-                let mut st = self.conn.prepare(
-                    "SELECT interface_name, timestamp, bytes_received, bytes_sent, rx_rate, tx_rate
-                     FROM network_samples WHERE interface_name=?1 AND timestamp>=?2
-                     ORDER BY timestamp ASC",
-                )?;
-                Ok(st.query_map(params![iface, since_s], map_row)?
-                    .filter_map(|r| r.ok())
-                    .collect())
-            }
-            None => {
-                let mut st = self.conn.prepare(
-                    "SELECT interface_name, timestamp, bytes_received, bytes_sent, rx_rate, tx_rate
-                     FROM network_samples WHERE timestamp>=?1
-                     ORDER BY timestamp ASC",
-                )?;
-                Ok(st.query_map(params![since_s], map_row)?
-                    .filter_map(|r| r.ok())
-                    .collect())
-            }
+        // Bind rows to an explicit Vec<_> so the borrow of `st` ends before Ok().
+        if let Some(iface) = interface {
+            let mut st = self.conn.prepare(
+                "SELECT interface_name, timestamp, bytes_received, bytes_sent, rx_rate, tx_rate
+                 FROM network_samples WHERE interface_name=?1 AND timestamp>=?2
+                 ORDER BY timestamp ASC",
+            )?;
+            let rows: Vec<InterfaceSample> = st
+                .query_map(params![iface, since_s], map_row)?
+                .filter_map(|r| r.ok())
+                .collect();
+            Ok(rows)
+        } else {
+            let mut st = self.conn.prepare(
+                "SELECT interface_name, timestamp, bytes_received, bytes_sent, rx_rate, tx_rate
+                 FROM network_samples WHERE timestamp>=?1
+                 ORDER BY timestamp ASC",
+            )?;
+            let rows: Vec<InterfaceSample> = st
+                .query_map(params![since_s], map_row)?
+                .filter_map(|r| r.ok())
+                .collect();
+            Ok(rows)
         }
     }
 
